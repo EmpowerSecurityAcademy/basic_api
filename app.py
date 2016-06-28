@@ -18,7 +18,7 @@ tasks = [
     }
 ]
 
-@app.route('/todo/api/v1.0/tasks', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/todo/api/v1.0/tasks', methods=['GET', 'POST', 'PUT'])
 def do_tasks():
 	if request.method == 'GET':
 		return jsonify({'tasks': tasks})
@@ -39,11 +39,26 @@ def do_tasks():
 				x['done'] = content['done']
 		return jsonify({'status_code': 200})
 
+	return jsonify({'status_code': '400'})
+
+
+
+# RESTFUL operations related to a specific task
+
+@app.route('/todo/api/v1.0/tasks/<task_id>', methods=['GET', 'DELETE'])
+def do_task(task_id):
+	task_id = int(task_id)
+	if request.method == 'GET':
+		for task in tasks:
+			if task['id'] == task_id:
+				return jsonify(task)
+
 	if request.method == 'DELETE':
-		
+		for task in tasks:
+			if task['id'] == task_id:
+				tasks.remove(task)
+				return jsonify({'status_code': 200})
 
-
-	
 	return jsonify({'status_code': '400'})
 
 
