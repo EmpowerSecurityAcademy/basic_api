@@ -50,7 +50,7 @@ def do_task(task_id):
 		task = task_array[0]
 		task["title"] = content["title"]
 		task["description"] = content["description"]
-		task["description"] = content["description"]
+		task["done"] = content["done"]
 		return make_response(jsonify({'task': task}), 200)
 
 
@@ -58,7 +58,7 @@ def do_task(task_id):
 		task_array = [t for t in tasks if t['id'] == task_id]
 		if len(task_array) > 0:
 			tasks.remove(task_array[0])
-			return make_response(jsonify({'status_code': 200}), 200)
+			return make_response(jsonify({'deleted_id': task_id}), 200)
 		else:
 			return make_response(jsonify({'status_code': 404}), 404)
 
