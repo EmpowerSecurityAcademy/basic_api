@@ -1,65 +1,67 @@
-#!flask/bin/python
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 
 app = Flask(__name__)
 
 tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
+	{
+		'id': 1,
+		'title': 'Buy groceries',
+		'description': 'Milk, Cheese, Pizza, Fruit, Tylenol',
+		'done': False
+	},
+	{
+		'id': 2,
+		'title': 'Learn Python',
+		'description': 'Need to find a good Python tutorial on the web',
+		'done': False
+	}
 ]
 
-@app.route('/todo/api/v1.0/tasks', methods=['GET', 'POST'])
+url_root = '/todo/api/v1.0/'
+
+@app.route(url_root+'tasks', methods=['GET', 'POST'])
 def do_tasks():
 	if request.method == 'GET':
-		return jsonify({'tasks': tasks})
-
+		return make_response(jsonify({'tasks': tasks}), 200)
 
 	if request.method == 'POST':
 		content = request.get_json(silent=True)
+		content["id"] = tasks[-1]['id'] + 1
 		tasks.append(content)
-		return jsonify({'status_code': 201})
+		return make_response(jsonify({'id': content["id"]}), 201)
 
-	return jsonify({'status_code': '400'})
+	return make_response(jsonify({'status_code': 404}), 404)
 
-
-
-# RESTFUL operations related to a specific task
-
-@app.route('/todo/api/v1.0/tasks/<task_id>', methods=['GET', 'DELETE', 'PUT'])
+@app.route(url_root+'tasks/<task_id>', methods=['GET', 'PUT', 'DELETE'])
 def do_task(task_id):
 	task_id = int(task_id)
 	if request.method == 'GET':
-		for task in tasks:
-			if task['id'] == task_id:
-				return jsonify(task)
+		task_array = [t for t in tasks if t['id'] == task_id]
+		if len(task_array) != 0:
+			return make_response(jsonify({'task': task_array[0]}), 200)
+		else:
+			return make_response(jsonify({'status_code': 404}), 404)
 
-	#return proper status_code is object not found in tasks
 	if request.method == 'PUT':
 		content = request.get_json(silent=True)
-		for x in tasks:
-			if x['id'] == task_id:
-				x['title'] = content['title']
-				x['description'] = content['description']
-				x['done'] = content['done']
-		return jsonify({'status_code': 200})
+		task_array = [t for t in tasks if t['id'] == task_id]
+		task = task_array[0]
+		task["title"] = content["title"]
+		task["description"] = content["description"]
+		task["description"] = content["description"]	
+		return make_response(jsonify({'task': task}), 200)
+
 
 	if request.method == 'DELETE':
-		for task in tasks:
-			if task['id'] == task_id:
-				tasks.remove(task)
-				return jsonify({'status_code': 200})
+		task_array = [t for t in tasks if t['id'] == task_id]
+		if len(task_array) > 0:
+			tasks.remove(task_array[0])
+			return make_response(jsonify({'status_code': 200}), 200)
+		else:
+			return make_response(jsonify({'status_code': 404}), 404)
 
-	return jsonify({'status_code': '400'})
+	return make_response(jsonify({'status_code': 404}), 404) 
+
 
 
 if __name__ == '__main__':
