@@ -30,7 +30,7 @@ def do_tasks():
 		tasks.append(content)
 		return make_response(jsonify({'id': content["id"]}), 201)
 
-	return make_response(jsonify({'status_code': 404}), 404)
+	return make_response(jsonify({'status_code': 400}), 400)
 
 @app.route(url_root+'tasks/<task_id>', methods=['GET', 'PUT', 'DELETE'])
 def do_task(task_id):
@@ -45,10 +45,12 @@ def do_task(task_id):
 	if request.method == 'PUT':
 		content = request.get_json(silent=True)
 		task_array = [t for t in tasks if t['id'] == task_id]
+		if len(task_array) == 0:
+			return make_response(jsonify({'status_code': 404}), 404)
 		task = task_array[0]
 		task["title"] = content["title"]
 		task["description"] = content["description"]
-		task["description"] = content["description"]	
+		task["description"] = content["description"]
 		return make_response(jsonify({'task': task}), 200)
 
 
@@ -60,7 +62,7 @@ def do_task(task_id):
 		else:
 			return make_response(jsonify({'status_code': 404}), 404)
 
-	return make_response(jsonify({'status_code': 404}), 404) 
+	return make_response(jsonify({'status_code': 400}), 400) 
 
 
 
