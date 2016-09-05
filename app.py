@@ -19,14 +19,17 @@ tasks = [
 
 url_root = '/todo/api/v1.0/'
 
-@basic_api.route(url_root+'tasks', methods=['GET', 'POST'])
+@basic_api.route(url_root+'tasks', methods=['GET', 'POST', 'PUT'])
 def do_tasks():
 	if request.method == 'GET':
 		return make_response(jsonify({'tasks': tasks}), 200)
 
-	if request.method == 'POST':
+	if request.method == 'POST' or 'PUT':
 		content = request.get_json(silent=True)
-		content["id"] = tasks[-1]['id'] + 1
+		if len(tasks) == 0:
+			content["id"] = 1
+		else:
+			content["id"] = tasks[-1]['id'] + 1
 		tasks.append(content)
 		return make_response(jsonify({'id': content["id"]}), 201)
 
@@ -46,7 +49,9 @@ def do_task(task_id):
 		content = request.get_json(silent=True)
 		task_array = [t for t in tasks if t['id'] == task_id]
 		if len(task_array) == 0:
-			return make_response(jsonify({'status_code': 404}), 404)
+			content["id"] = tasks[-1]['id'] + 1
+			tasks.append(content)
+			return make_response(jsonify({'id': content["id"]}), 201)
 		task = task_array[0]
 		task["title"] = content["title"]
 		task["description"] = content["description"]
